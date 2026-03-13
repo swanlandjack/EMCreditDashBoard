@@ -1,0 +1,11 @@
+{
+  "name": "em-credit-terminal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jack Lau EM Credit Terminal — live data via Perplexity Sonar API",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site — no build step needed'"
+  },
+  "dependencies": {}
+}

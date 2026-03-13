@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack Lau EM Credit Terminal (Beta)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- HEADER BAR -->
+  <header class="terminal-header">
+    <div class="header-left">
+      <svg class="logo" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-label="EM Credit Terminal">
+        <rect x="2" y="2" width="24" height="24" rx="3" stroke="#FF8C00" stroke-width="2"/>
+        <path d="M8 14h12M14 8v12" stroke="#FF8C00" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="4" stroke="#FF8C00" stroke-width="1.5" fill="none"/>
+      </svg>
+      <span class="logo-text">JACK LAU</span>
+      <span class="logo-divider">|</span>
+      <span class="logo-subtitle">EM CREDIT TERMINAL <span style="color:#d29922;font-size:9px;">(BETA)</span></span>
+    </div>
+    <div class="header-center">
+      <span class="market-status" id="market-status">LOADING</span>
+      <span class="timestamp" id="timestamp"></span>
+    </div>
+    <div class="header-right">
+      <span class="data-label">DXY</span>
+      <span class="data-value" id="dxy-val">—</span>
+      <span class="data-label">BRENT</span>
+      <span class="data-value alert" id="brent-val">—</span>
+      <span class="data-label">UST 10Y</span>
+      <span class="data-value" id="ust-val">—</span>
+    </div>
+  </header>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar" role="tablist">
+    <button class="tab active" role="tab" data-tab="overview" aria-selected="true">
+      <span class="tab-key">F1</span> OVERVIEW
+    </button>
+    <button class="tab" role="tab" data-tab="spreads">
+      <span class="tab-key">F2</span> SPREADS
+    </button>
+    <button class="tab" role="tab" data-tab="rates">
+      <span class="tab-key">F3</span> EM RATES
+    </button>
+    <button class="tab" role="tab" data-tab="sovereign">
+      <span class="tab-key">F4</span> SOVEREIGN
+    </button>
+    <button class="tab" role="tab" data-tab="corporate">
+      <span class="tab-key">F5</span> CORPORATE
+    </button>
+    <button class="tab" role="tab" data-tab="fx">
+      <span class="tab-key">F6</span> FX & FLOWS
+    </button>
+    <button class="tab" role="tab" data-tab="risks">
+      <span class="tab-key">F7</span> RISK MAP
+    </button>
+  </nav>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">FETCHING LIVE DATA VIA PERPLEXITY SONAR...</div>
+      <div class="loading-sub" id="loading-progress">Initializing 14 market data queries</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="terminal-main">
+
+    <!-- ==================== F1 OVERVIEW ==================== -->
+    <section class="tab-content active" id="tab-overview">
+      <div class="kpi-row" id="kpi-row"></div>
+      <div class="panel-row">
+        <div class="panel commentary-panel" style="flex:2">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> MARKET COMMENTARY — <span id="commentary-date">—</span>
+          </div>
+          <div class="panel-body commentary" id="commentary-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> YTD TOTAL RETURNS
+          </div>
+          <div class="panel-body">
+            <div class="return-chart-container">
+              <canvas id="chart-returns"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> CROSS-ASSET MONITOR
+          </div>
+          <div class="panel-body" id="cross-asset-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> REGIONAL EMBI SPREADS
+          </div>
+          <div class="panel-body">
+            <div id="regional-table-container"></div>
+            <div class="chart-container" style="margin-top:12px;">
+              <canvas id="chart-regional"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== F2 SPREADS ==================== -->
+    <section class="tab-content" id="tab-spreads">
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> SPREAD EVOLUTION (TRAILING 12M, BPS)
+          </div>
+          <div class="panel-body">
+            <div class="chart-container large">
+              <canvas id="chart-spread-history"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> SPREAD DECOMPOSITION BY RATING
+          </div>
+          <div class="panel-body" id="spread-decomp-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel commentary-panel">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> SPREAD ANALYSIS
+          </div>
+          <div class="panel-body commentary" id="spread-analysis-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== F3 EM RATES ==================== -->
+    <section class="tab-content" id="tab-rates">
+      <div class="panel-row">
+        <div class="panel" style="flex:2">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> EM CENTRAL BANK POLICY RATES
+          </div>
+          <div class="panel-body" id="em-rates-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> DM CENTRAL BANKS
+          </div>
+          <div class="panel-body">
+            <div id="dm-rates-body"></div>
+            <div class="chart-container" style="margin-top:16px;">
+              <canvas id="chart-rate-cuts"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel commentary-panel">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> RATES ANALYSIS
+          </div>
+          <div class="panel-body commentary" id="rates-analysis-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== F4 SOVEREIGN ==================== -->
+    <section class="tab-content" id="tab-sovereign">
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> SOVEREIGN CREDIT OVERVIEW
+          </div>
+          <div class="panel-body" id="sovereign-table-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> RATINGS TRAJECTORY
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-ratings"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="panel commentary-panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> SOVEREIGN ANALYSIS
+          </div>
+          <div class="panel-body commentary" id="sovereign-analysis-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== F5 CORPORATE ==================== -->
+    <section class="tab-content" id="tab-corporate">
+      <div class="kpi-row" id="corp-kpi-row"></div>
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> GEMBRIDGE FOCUS SECTORS — TRANSITION THEMES
+          </div>
+          <div class="panel-body" id="sectors-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> CORPORATE DEFAULT & RECOVERY
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <canvas id="chart-defaults"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="panel commentary-panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> CORPORATE ANALYSIS
+          </div>
+          <div class="panel-body commentary" id="corp-analysis-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== F6 FX & FLOWS ==================== -->
+    <section class="tab-content" id="tab-fx">
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> DXY & EM FX MONITOR
+          </div>
+          <div class="panel-body">
+            <div class="chart-container large">
+              <canvas id="chart-dxy"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> EM FUND FLOWS
+          </div>
+          <div class="panel-body">
+            <div class="chart-container large">
+              <canvas id="chart-flows"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> KEY EM CURRENCIES vs USD
+          </div>
+          <div class="panel-body" id="fx-table-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel commentary-panel">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> FX & FLOWS ANALYSIS
+          </div>
+          <div class="panel-body commentary" id="fx-analysis-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== F7 RISK MAP ==================== -->
+    <section class="tab-content" id="tab-risks">
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon alert">&#9888;</span> RISK RADAR — ACTIVE THREATS
+          </div>
+          <div class="panel-body">
+            <div class="risk-grid" id="risk-grid">
+              <div class="skeleton-block"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel" style="flex:1">
+          <div class="panel-header">
+            <span class="panel-icon">&#9670;</span> SCENARIO ANALYSIS — RETURN EXPECTATIONS
+          </div>
+          <div class="panel-body" id="scenario-body">
+            <div class="skeleton-block"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="terminal-footer">
+    <div class="footer-left">
+      <span class="footer-text" id="footer-sources">Sources: Perplexity Sonar AI — aggregating JPMorgan, Bloomberg, Trading Economics, FRED, Reuters, Fitch</span>
+    </div>
+    <div class="footer-right">
+      <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer" class="footer-link">Created with Perplexity Computer</a>
+      <span class="footer-sep">|</span>
+      <span class="footer-text" id="footer-updated">Last refresh: —</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
